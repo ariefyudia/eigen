@@ -2,6 +2,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('members')
 export class Member {
+  user: any;
+  [x: string]: any;
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

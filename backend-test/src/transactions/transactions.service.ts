@@ -25,6 +25,7 @@ export class TransactionsService {
     private transactionRepository: Repository<Transaction>,
   ) {}
   async create(createTransactionDto: CreateTransactionDto) {
+    // Check penalty user
     const checkPenalty = await this.memberRepository.findOne({
       where: {
         code: createTransactionDto.userId,
@@ -37,6 +38,7 @@ export class TransactionsService {
       );
     }
 
+    // Check loan user
     const checkTransactionUser = await this.transactionRepository.find({
       where: {
         userId: createTransactionDto.userId,
@@ -50,6 +52,7 @@ export class TransactionsService {
       );
     }
 
+    // Check kuota peminjaman user
     const checkQuota =
       createTransactionDto.books.length - checkTransactionUser.length;
     if (createTransactionDto.books.length > checkQuota && checkQuota !== 0) {
@@ -58,6 +61,7 @@ export class TransactionsService {
       );
     }
 
+    // Check ketersediaan buku
     let messageStatusBook = [];
     for (const book of createTransactionDto.books) {
       const checkStok = await this.bookRepository.findOne({
@@ -90,6 +94,7 @@ export class TransactionsService {
       throw new ForbiddenException(messageStatusBook);
     }
 
+    // Proses peminjaman
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -126,6 +131,7 @@ export class TransactionsService {
   }
 
   async returnBook(updateTransactionDto: UpdateTransactionDto) {
+    // Check loan user
     const transactions = await this.transactionRepository.find({
       where: {
         userId: updateTransactionDto.userId,
@@ -138,6 +144,7 @@ export class TransactionsService {
       throw new NotFoundException('Transaksi peminjaman tidak ditemukan');
     }
 
+    // Prose pengembalian buku
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -162,6 +169,7 @@ export class TransactionsService {
           Difference_In_Time / (1000 * 3600 * 24),
         );
 
+        // Create penalty jika > 7 hari
         if (Difference_In_Days > 7) {
           user.penaltyUntil = dayjs().add(3, 'days').toDate();
           await queryRunner.manager.save(user);
