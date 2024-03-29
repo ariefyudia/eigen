@@ -26,6 +26,13 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Setup Database with MariaDB / MySQL
+
+```bash
+CREATE DATABASE [IF NOT EXISTS] eigen
+PORT DB bisa diubah pada app.module.ts
+```
+
 ## Installation
 
 ```bash
@@ -45,17 +52,10 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
+## Swagger
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+http://localhost:3000/api
 ```
 
 ## Support

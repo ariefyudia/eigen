@@ -22,7 +22,10 @@ export class MembersService {
 
   async findAll() {
     const members = await this.dataSource.query(
-      'SELECT members.*, (SELECT COUNT(1) FROM transactions WHERE transactions.userId = members.code AND status = "LOAN") AS total FROM members',
+      `SELECT members.*, 
+      (SELECT COUNT(1) FROM transactions WHERE transactions.userId = members.code AND status = "LOAN") AS totalLoanActive,
+      (SELECT COUNT(1) FROM transactions WHERE transactions.userId = members.code) AS totalLoan
+      FROM members`,
     );
     return members;
   }

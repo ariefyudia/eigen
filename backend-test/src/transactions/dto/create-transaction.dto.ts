@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -8,9 +9,11 @@ import {
 } from 'class-validator';
 
 export class CreateTransactionDto {
+  @ApiProperty({ type: String })
   @IsNotEmpty()
   userId: string;
 
+  @ApiProperty({ type: [String] })
   @IsArray()
   @IsNotEmpty()
   @ArrayMinSize(1)

@@ -1,9 +1,13 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from 'src/books/entities/book.entity';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { Member } from 'src/members/entities/member.entity';
 import { StatusLoan, Transaction } from './entities/transaction.entity';
 import { NotEquals } from 'class-validator';
@@ -119,6 +123,67 @@ export class TransactionsService {
     }
 
     return 'This action adds a new transaction';
+  }
+
+  async returnBook(updateTransactionDto: UpdateTransactionDto) {
+    const transactions = await this.transactionRepository.find({
+      where: {
+        userId: updateTransactionDto.userId,
+        bookId: In(updateTransactionDto.books),
+        status: StatusLoan.LOAN,
+      },
+    });
+
+    if (transactions.length == 0) {
+      throw new NotFoundException('Transaksi peminjaman tidak ditemukan');
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      for (const transaction of transactions) {
+        const user = await this.memberRepository.findOne({
+          where: { code: transaction.userId },
+        });
+        const book = await this.bookRepository.findOne({
+          where: { code: transaction.bookId },
+        });
+        console.log(user, book);
+        // Check expired return date
+        let date1 = new Date(transaction.expiredAt);
+        let date2 = new Date();
+
+        let Difference_In_Time = date2.getTime() - date1.getTime();
+
+        let Difference_In_Days = Math.round(
+          Difference_In_Time / (1000 * 3600 * 24),
+        );
+
+        if (Difference_In_Days > 7) {
+          user.penaltyUntil = dayjs().add(3, 'days').toDate();
+          await queryRunner.manager.save(user);
+        }
+
+        book.stock = book.stock + 1;
+        await queryRunner.manager.save(book);
+
+        transaction.returnDate = dayjs().toDate();
+        transaction.status = StatusLoan.RETURN;
+        await queryRunner.manager.save(transaction);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new ForbiddenException('Gagal simpan pengembalian buku ' + err);
+    } finally {
+      await queryRunner.release();
+    }
+
+    return 'Buku berhasil dikembalikan';
   }
 
   findAll() {

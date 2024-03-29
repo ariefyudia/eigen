@@ -17,28 +17,28 @@ import { ApiTags } from '@nestjs/swagger';
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
-  @Post()
-  create(@Body() createBookDto: CreateBookDto) {
-    return this.booksService.create(createBookDto);
-  }
+  // @Post()
+  // create(@Body() createBookDto: CreateBookDto) {
+  //   return this.booksService.create(createBookDto);
+  // }
 
   @Get()
   findAll() {
     return this.booksService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.booksService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.booksService.findOne(+id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
-    return this.booksService.update(+id, updateBookDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
+  //   return this.booksService.update(+id, updateBookDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.booksService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.booksService.remove(+id);
+  // }
 }
